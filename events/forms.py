@@ -7,22 +7,39 @@ from .models import CustomUser, Event, EventComment, Ticket
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     phone_number = forms.CharField(max_length=15, required=False)
-    user_type = forms.ChoiceField(choices=CustomUser.USER_TYPE_CHOICES, initial=1)
     
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'password1', 'password2', 'user_type', 'phone_number')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user_type'].choices = [
+            (value, label) 
+            for value, label in CustomUser.USER_TYPE_CHOICES 
+            if value != 3 
+        ]
+        self.fields['user_type'].initial = 1
+
 class CustomAuthenticationForm(AuthenticationForm):
     remember_me = forms.BooleanField(required=False)
 
+
 class EventForm(forms.ModelForm):
     start_date = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        widget=forms.DateTimeInput(attrs={
+            'type': 'datetime-local',
+            'class': 'form-control datetime-picker',
+            'placeholder': 'Select start date and time'
+        }),
         input_formats=['%Y-%m-%dT%H:%M']
     )
     end_date = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        widget=forms.DateTimeInput(attrs={
+            'type': 'datetime-local',
+            'class': 'form-control datetime-picker',
+            'placeholder': 'Select end date and time'
+        }),
         input_formats=['%Y-%m-%dT%H:%M']
     )
     
@@ -30,6 +47,60 @@ class EventForm(forms.ModelForm):
         model = Event
         fields = ['title', 'description', 'location', 'start_date', 'end_date', 
                  'category', 'event_type', 'capacity', 'price', 'image']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter event title'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Describe your event in detail',
+                'rows': 4
+            }),
+            'location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter physical location or online meeting link'
+            }),
+            'category': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'event_type': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'capacity': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Maximum attendees',
+                'min': 1
+            }),
+            'price': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '0.00',
+                'min': 0,
+                'step': '0.01'
+            }),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            })
+        }
+        labels = {
+            'title': 'Event Title',
+            'description': 'Description',
+            'location': 'Location',
+            'start_date': 'Start Date & Time',
+            'end_date': 'End Date & Time',
+            'category': 'Category',
+            'event_type': 'Event Type',
+            'capacity': 'Maximum Capacity',
+            'price': 'Ticket Price (USD)',
+            'image': 'Event Image'
+        }
+        help_texts = {
+            'description': 'Provide a detailed description of your event (minimum 50 characters)',
+            'capacity': 'Maximum number of attendees allowed',
+            'price': 'Set to 0 for free events',
+            'image': 'Recommended size: 1200×600 pixels (JPEG or PNG)'
+        }
     
     def clean(self):
         cleaned_data = super().clean()
@@ -42,14 +113,19 @@ class EventForm(forms.ModelForm):
             if start_date < timezone.now():
                 raise ValidationError("Start date cannot be in the past.")
         
+        description = cleaned_data.get('description')
+        if description and len(description) < 50:
+            raise ValidationError("Description must be at least 50 characters long.")
+        
         return cleaned_data
+    
 
 class EventCommentForm(forms.ModelForm):
     class Meta:
         model = EventComment
         fields = ['content', 'rating']
         widgets = {
-            'rating': forms.NumberInput(attrs={'min': 1, 'max': 5}),
+            'rating': forms.NumberInput(attrs={'min': 1, 'max': 2}),
         }
 
 class TicketPurchaseForm(forms.ModelForm):

@@ -30,7 +30,6 @@ class EventAdmin(admin.ModelAdmin):
     raw_id_fields = ('organizer',)
     list_editable = ('is_active',)
     readonly_fields = ('created_at', 'updated_at')
-    prepopulated_fields = {'slug': ('title',)}
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)

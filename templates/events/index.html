@@ -1,0 +1,47 @@
+{% extends 'events/base.html' %}
+
+{% block content %}
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Discover Amazing Events</h1>
+        <p class="lead">Find, create, and manage events all in one place</p>
+        <a href="{% url 'event_list' %}" class="btn btn-primary btn-lg mt-3">Browse Events</a>
+        {% if user.is_authenticated and user.user_type == 2 %}
+        <a href="{% url 'event_create' %}" class="btn btn-outline-light btn-lg mt-3 ms-2">Create Event</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <h2 class="mb-4">Upcoming Events</h2>
+    <div class="row">
+        {% for event in upcoming_events %}
+        <div class="col-md-4">
+            <div class="card event-card h-100">
+                {% if event.image %}
+                <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.title }}</h5>
+                    <p class="card-text text-muted">
+                        <i class="bi bi-calendar-event"></i> {{ event.start_date|date:"M d, Y" }}<br>
+                        <i class="bi bi-geo-alt"></i> {{ event.location }}
+                    </p>
+                    <p class="card-text">{{ event.description|truncatechars:100 }}</p>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{% url 'event_detail' event.pk %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                    {% if event.event_type == 'private' %}
+                    <span class="badge bg-warning text-dark float-end">Private</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No upcoming events at the moment. Check back later!</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

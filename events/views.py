@@ -228,11 +228,19 @@ class CustomLoginView(LoginView):
     form_class = CustomAuthenticationForm
     template_name = 'events/registration/login.html'
     
+    def get_success_url(self):
+        next_url = self.request.GET.get('next')
+        if next_url:
+            return next_url
+        
+        if self.request.user.user_type == 3:
+            return reverse_lazy('admin_dashboard')
+        return reverse_lazy('user_dashboard')
+    
     def form_valid(self, form):
         remember_me = form.cleaned_data.get('remember_me')
         if not remember_me:
             self.request.session.set_expiry(0)
-        
         return super().form_valid(form)
 
 
@@ -251,6 +259,13 @@ class RegisterView(CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, 'Registration successful. Please log in.')
+        return response
+
+class CustomLogoutView(LogoutView):
+    next_page = reverse_lazy('home') 
+    
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
         return response
 
 

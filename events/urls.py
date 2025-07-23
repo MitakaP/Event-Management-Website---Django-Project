@@ -3,10 +3,11 @@ from .views import (
     HomeView, EventListView, EventDetailView, EventCreateView,
     EventUpdateView, EventDeleteView, purchase_ticket, UserDashboardView,
     CustomLoginView, RegisterView, CustomPasswordResetView, mark_notification_as_read,
-    AdminDashboardView
+    AdminDashboardView, CustomLogoutView
 )
 from django.contrib.auth.views import (
-    PasswordResetDoneView, PasswordResetCompleteView, LogoutView, PasswordResetConfirmView
+    PasswordResetDoneView, PasswordResetCompleteView, 
+    LogoutView, PasswordResetConfirmView,
 )
 
 urlpatterns = [
@@ -15,7 +16,6 @@ urlpatterns = [
     path('events/', EventListView.as_view(), name='event_list'),
     path('events/<int:pk>/', EventDetailView.as_view(), name='event_detail'),
     path('login/', CustomLoginView.as_view(), name='login'),
-    path('logout/', LogoutView.as_view(), name='logout'),
     path('register/', RegisterView.as_view(), name='register'),
     path('password-reset/', CustomPasswordResetView.as_view(), name='password_reset'),
     path('password-reset/done/', PasswordResetDoneView.as_view(), name='password_reset_done'),
@@ -28,4 +28,5 @@ urlpatterns = [
     path('dashboard/', UserDashboardView.as_view(), name='user_dashboard'),
     path('notifications/<int:pk>/mark-read/', mark_notification_as_read, name='mark_notification_read'),
     path('admin-dashboard/', AdminDashboardView.as_view(), name='admin_dashboard'),
+    path('logout/', CustomLogoutView.as_view(), name='logout'),
 ]

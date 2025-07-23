@@ -1,0 +1,131 @@
+{% extends 'events/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center mb-0">Welcome Back</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Username Field -->
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">Username or Email</label>
+                            {{ form.username|add_class:"form-control form-control-lg" }}
+                            <div class="invalid-feedback">
+                                {{ form.username.errors|striptags }}
+                            </div>
+                        </div>
+                        
+                        <!-- Password Field -->
+                        <div class="mb-3">
+                            <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                            <div class="input-group">
+                                {{ form.password|add_class:"form-control form-control-lg" }}
+                                <button class="btn btn-outline-secondary toggle-password" type="button">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ form.password.errors|striptags }}
+                            </div>
+                        </div>
+                        
+                        <!-- Remember Me & Forgot Password -->
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="form-check">
+                                {{ form.remember_me|add_class:"form-check-input" }}
+                                <label class="form-check-label" for="{{ form.remember_me.id_for_label }}">Remember me</label>
+                            </div>
+                            <div>
+                                <a href="{% url 'password_reset' %}" class="text-decoration-none">Forgot password?</a>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 py-2 mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                        </button>
+                        
+                        <div class="text-center">
+                            <p class="mb-0">Or login with:</p>
+                            <div class="d-flex justify-content-center gap-3 mt-2">
+                                <a href="#" class="btn btn-outline-danger"><i class="bi bi-google"></i></a>
+                                <a href="#" class="btn btn-outline-primary"><i class="bi bi-facebook"></i></a>
+                                <a href="#" class="btn btn-outline-dark"><i class="bi bi-github"></i></a>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <p class="mb-0">Don't have an account? <a href="{% url 'register' %}" class="fw-bold">Register here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .toggle-password:hover {
+        cursor: pointer;
+    }
+    .card {
+        border-radius: 15px;
+        border: none;
+    }
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+    .form-control-lg {
+        padding: 0.75rem 1rem;
+    }
+    .btn-check:checked + .btn-outline-primary {
+        background-color: var(--bs-primary);
+        color: white;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle password visibility
+        document.querySelectorAll('.toggle-password').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const passwordInput = this.previousElementSibling;
+                const icon = this.querySelector('i');
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.replace('bi-eye', 'bi-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.replace('bi-eye-slash', 'bi-eye');
+                }
+            });
+        });
+        
+        // Form validation
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
+{% endblock %}

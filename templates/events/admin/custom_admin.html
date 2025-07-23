@@ -1,0 +1,58 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+:root {
+    --primary: #6f42c1;
+    --secondary: #6610f2;
+}
+#header {
+    background-color: var(--primary);
+}
+.module h2, .module caption, .inline-group h2 {
+    background-color: var(--secondary);
+}
+a:link, a:visited {
+    color: var(--primary);
+}
+.dashboard #content {
+    width: 100%;
+}
+.dashboard .module table {
+    width: 100%;
+}
+.dashboard .module {
+    margin: 0 15px 15px 0;
+    float: left;
+    width: 48%;
+}
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <i class="fas fa-calendar-alt"></i> EventHub Administration
+    </a>
+</h1>
+{% endblock %}
+
+{% block content_title %}
+{% if title %}<h1>{{ title }}</h1>{% endif %}
+<div class="admin-navigation">
+    <a href="{% url 'admin_dashboard' %}" class="button">Dashboard</a>
+    <a href="{% url 'admin:events_event_changelist' %}" class="button">Events</a>
+    <a href="{% url 'admin:events_customuser_changelist' %}" class="button">Users</a>
+</div>
+{% endblock %}
+
+{% block footer %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add custom admin JS here
+    console.log('Custom admin loaded');
+});
+</script>
+{% endblock %}  

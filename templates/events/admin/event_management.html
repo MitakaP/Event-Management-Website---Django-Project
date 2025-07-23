@@ -1,0 +1,127 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="custom-admin-container">
+    <h1>Event Management Dashboard</h1>
+    
+    <div class="module">
+        <h2>Event Statistics</h2>
+        <table>
+            <tr>
+                <th>Total Events</th>
+                <td>{{ total_events }}</td>
+            </tr>
+            <tr>
+                <th>Upcoming Events</th>
+                <td>{{ upcoming_events }}</td>
+            </tr>
+            <tr>
+                <th>Past Events</th>
+                <td>{{ past_events }}</td>
+            </tr>
+            <tr>
+                <th>Active Events</th>
+                <td>{{ active_events }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="module">
+        <h2>Recent Events</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Organizer</th>
+                    <th>Date</th>
+                    <th>Tickets</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in recent_events %}
+                <tr>
+                    <td><a href="{% url 'admin:events_event_change' event.id %}">{{ event.title }}</a></td>
+                    <td>{{ event.organizer }}</td>
+                    <td>{{ event.start_date|date:"M d, Y" }}</td>
+                    <td>{{ event.tickets.count }}/{{ event.capacity }}</td>
+                    <td>
+                        {% if event.is_active %}
+                        <span class="status-active">Active</span>
+                        {% else %}
+                        <span class="status-inactive">Inactive</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="module">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+            <a href="{% url 'admin:events_event_add' %}" class="button">Add New Event</a>
+            <a href="{% url 'admin:events_event_changelist' %}?is_active__exact=0" class="button">View Inactive Events</a>
+            <a href="{% url 'admin:events_event_changelist' %}?start_date__gte={% now 'Y-m-d' %}" class="button">View Upcoming Events</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.custom-admin-container {
+    padding: 20px;
+}
+.module {
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.module h2 {
+    margin: 0;
+    padding: 8px;
+    font-size: 14px;
+    text-align: left;
+    background: #f8f8f8;
+    color: #666;
+}
+.module table {
+    width: 100%;
+}
+.module table th {
+    text-align: left;
+    padding: 8px;
+    background: #f5f5f5;
+}
+.module table td {
+    padding: 8px;
+    border-top: 1px solid #eee;
+}
+.status-active {
+    color: green;
+    font-weight: bold;
+}
+.status-inactive {
+    color: #999;
+}
+.action-buttons {
+    padding: 15px;
+}
+.action-buttons .button {
+    display: inline-block;
+    padding: 8px 15px;
+    margin-right: 10px;
+    background: #79aec8;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+}
+.action-buttons .button:hover {
+    background: #609ab6;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="custom-admin-container">
+    <h1>User Management Dashboard</h1>
+    
+    <div class="module">
+        <h2>User Statistics</h2>
+        <table>
+            <tr>
+                <th>Total Users</th>
+                <td>{{ total_users }}</td>
+            </tr>
+            <tr>
+                <th>Attendees</th>
+                <td>{{ attendee_count }}</td>
+            </tr>
+            <tr>
+                <th>Organizers</th>
+                <td>{{ organizer_count }}</td>
+            </tr>
+            <tr>
+                <th>Admins</th>
+                <td>{{ admin_count }}</td>
+            </tr>
+            <tr>
+                <th>New Users (Last 7 days)</th>
+                <td>{{ recent_users }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="module">
+        <h2>Recent Users</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Type</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in recent_users_list %}
+                <tr>
+                    <td><a href="{% url 'admin:events_customuser_change' user.id %}">{{ user.username }}</a></td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.get_user_type_display }}</td>
+                    <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                    <td>
+                        {% if user.is_active %}
+                        <span class="status-active">Active</span>
+                        {% else %}
+                        <span class="status-inactive">Inactive</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="module">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+            <a href="{% url 'admin:events_customuser_add' %}" class="button">Add New User</a>
+            <a href="{% url 'admin:events_customuser_changelist' %}?is_active__exact=0" class="button">View Inactive Users</a>
+            <a href="{% url 'admin:events_customuser_changelist' %}?date_joined__gte={% now 'Y-m-d' %}" class="button">View New Users</a>
+            <a href="{% url 'admin:auth_group_changelist' %}" class="button">Manage Groups</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Same styles as event_management.html plus: */
+.user-type-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: bold;
+}
+.user-type-1 { /* Attendee */
+    background: #e3f2fd;
+    color: #1976d2;
+}
+.user-type-2 { /* Organizer */
+    background: #e8f5e9;
+    color: #388e3c;
+}
+.user-type-3 { /* Admin */
+    background: #f3e5f5;
+    color: #8e24aa;
+}
+</style>
+{% endblock %}

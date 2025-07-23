@@ -1,0 +1,300 @@
+{% extends 'events/base.html' %}
+
+{% block content %}
+<div class="container">
+    {% if access_denied %}
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">Private Event</h4>
+        <p>This is a private event. Please <a href="{% url 'login' %}">login</a> to view details.</p>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                {% if event.image %}
+                <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h1 class="card-title">{{ event.title }}</h1>
+                    <div class="d-flex justify-content-between mb-3">
+                        <div>
+                            <span class="badge bg-primary">{{ event.category.name }}</span>
+                            {% if event.event_type == 'private' %}
+                            <span class="badge bg-warning text-dark">Private</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="text-muted">Organized by: {{ event.organizer.username }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p><i class="bi bi-calendar-event"></i> <strong>Start:</strong> {{ event.start_date }}</p>
+                        <p><i class="bi bi-calendar-event"></i> <strong>End:</strong> {{ event.end_date }}</p>
+                        <p><i class="bi bi-geo-alt"></i> <strong>Location:</strong> {{ event.location }}</p>
+                        <p><i class="bi bi-ticket-perforated"></i> <strong>Available Tickets:</strong> {{ event.available_tickets }} of {{ event.capacity }}</p>
+                        <p><i class="bi bi-cash"></i> <strong>Price:</strong> ${{ event.price }}</p>
+                    </div>
+                    
+                    <h4>Description</h4>
+                    <p class="card-text">{{ event.description }}</p>
+                </div>
+                
+                {% if user == event.organizer or user.is_superuser %}
+                <div class="card-footer">
+                    <a href="{% url 'event_update' event.pk %}" class="btn btn-outline-primary">Edit</a>
+                    <a href="{% url 'event_delete' event.pk %}" class="btn btn-outline-danger">Cancel Event</a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Comments Section -->
+            <div class="card mb-4 border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom-0 pb-0">
+        <h4 class="mb-3"><i class="bi bi-chat-square-text me-2"></i>Comments</h4>
+    </div>
+    
+    <div class="card-body pt-0">
+        {% if user.is_authenticated %}
+        <div class="comment-form mb-4">
+            <form method="post" action="{% url 'event_detail' event.pk %}" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="{{ comment_form.content.id_for_label }}" class="form-label small text-muted">Your Comment</label>
+                    {{ comment_form.content }}
+                    {% if comment_form.content.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ comment_form.content.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ comment_form.rating.id_for_label }}" class="form-label small text-muted">Rating (optional)</label>
+                    <div class="rating-input">
+                        {% for i in "54321" %}
+                            <input type="radio" id="rating-{{ i }}" name="rating" value="{{ i }}" 
+                                   {% if comment_form.rating.value == i %}checked{% endif %}>
+                            <label for="rating-{{ i }}"><i class="bi bi-star-fill"></i></label>
+                        {% endfor %}
+                    </div>
+                    {% if comment_form.rating.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ comment_form.rating.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary btn-sm px-3 py-2">
+                        <i class="bi bi-send me-1"></i> Post Comment
+                    </button>
+                </div>
+            </form>
+        </div>
+        <hr class="my-4">
+        {% else %}
+        <div class="alert alert-info mb-4">
+            <a href="{% url 'login' %}?next={% url 'event_detail' event.pk %}" class="text-decoration-none">Sign in</a> to leave a comment
+        </div>
+        {% endif %}
+        
+        <div class="comments-list">
+            {% if comments %}
+                {% for comment in comments %}
+                <div class="comment mb-4 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center">
+                                {% if comment.user.profile_picture %}
+                                <img src="{{ comment.user.profile_picture.url }}" class="rounded-circle me-2" width="32" height="32" alt="{{ comment.user.username }}">
+                                {% else %}
+                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="bi bi-person text-muted"></i>
+                                </div>
+                                {% endif %}
+                                <h6 class="mb-0">{{ comment.user.username }}</h6>
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
+                    </div>
+                    
+                    {% if comment.rating %}
+                    <div class="rating mb-2 text-warning">
+                        {% for _ in "12345" %}
+                            {% if forloop.counter <= comment.rating %}
+                                <i class="bi bi-star-fill"></i>
+                            {% else %}
+                                <i class="bi bi-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="comment-content mb-2">
+                        <p class="mb-1">{{ comment.content }}</p>
+                    </div>
+                    
+                    {% if user == comment.user %}
+                    <div class="comment-actions">
+                        <a href="#" class="text-muted small me-2"><i class="bi bi-pencil"></i> Edit</a>
+                        <a href="#" class="text-danger small"><i class="bi bi-trash"></i> Delete</a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-chat-square-text text-muted" style="font-size: 2rem;"></i>
+                    <p class="text-muted mt-2">No comments yet. Be the first to comment!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Comment section styling */
+    .comment-form {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.25rem;
+    }
+    
+    .comment-form textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    /* Rating input styling */
+    .rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+    
+    .rating-input input {
+        display: none;
+    }
+    
+    .rating-input label {
+        color: #dee2e6;
+        font-size: 1.5rem;
+        padding: 0 0.15rem;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .rating-input input:checked ~ label,
+    .rating-input input:hover ~ label,
+    .rating-input label:hover,
+    .rating-input label:hover ~ label {
+        color: #ffc107;
+    }
+    
+    /* Comment item styling */
+    .comment {
+        transition: background-color 0.2s;
+    }
+    
+    .comment:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .comment-content p {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 576px) {
+        .comment-form {
+            padding: 1rem;
+        }
+        
+        .rating-input label {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Event Actions</h4>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                        {% if has_ticket %}
+                        <div class="alert alert-success">
+                            You already have a ticket for this event.
+                        </div>
+                        {% else %}
+                            {% if event.available_tickets > 0 %}
+                            <form method="post" action="{% url 'purchase_ticket' event.pk %}">
+                                {% csrf_token %}
+                                {{ ticket_form.as_p }}
+                                <button type="submit" class="btn btn-success w-100">Purchase Ticket</button>
+                            </form>
+                            {% else %}
+                            <div class="alert alert-warning">
+                                This event is sold out.
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                    <div class="alert alert-info">
+                        <a href="{% url 'login' %}?next={% url 'event_detail' event.pk %}" class="btn btn-primary w-100">Login to Purchase Ticket</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h4>Event Organizer</h4>
+                </div>
+                <div class="card-body text-center">
+                    {% if event.organizer.profile_picture %}
+                    <img src="{{ event.organizer.profile_picture.url }}" class="rounded-circle mb-3" width="100" height="100" alt="{{ event.organizer.username }}">
+                    {% else %}
+                    <i class="bi bi-person-circle" style="font-size: 5rem;"></i>
+                    {% endif %}
+                    <h5>{{ event.organizer.username }}</h5>
+                    {% if event.organizer.bio %}
+                    <p class="text-muted">{{ event.organizer.bio }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+<script>
+    // Add some interactivity
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add confirmation for delete action
+        const deleteLinks = document.querySelectorAll('.comment-actions a.text-danger');
+        deleteLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (!confirm('Are you sure you want to delete this comment?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+        
+        // Auto-resize textarea
+        const textarea = document.querySelector('.comment-form textarea');
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+        }
+    });
+</script>
