@@ -18,17 +18,27 @@ from django.contrib.auth.views import (
     LoginView, PasswordResetView, PasswordResetConfirmView, LogoutView
 )
 
+from asgiref.sync import sync_to_async
+
 
 class HomeView(TemplateView):
     template_name = 'events/index.html'
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['upcoming_events'] = Event.objects.filter(
+    async def get(self, request, *args, **kwargs):
+        context = await self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+    
+    async def get_context_data(self, **kwargs):
+        context = await sync_to_async(super().get_context_data)(**kwargs)
+        context['upcoming_events'] = await self.get_upcoming_events()
+        return context
+    
+    @sync_to_async
+    def get_upcoming_events(self):
+        return list(Event.objects.filter(
             start_date__gt=timezone.now(),
             is_active=True
-        ).order_by('start_date')[:6]
-        return context
+        ).order_by('start_date')[:6])
 
 
 class EventListView(ListView):
