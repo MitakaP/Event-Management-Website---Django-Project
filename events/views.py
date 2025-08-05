@@ -12,7 +12,7 @@ from django.db.models import Q
 from .models import Event, EventComment, Ticket, CustomUser, Notification, EventCategory
 from .forms import (
     CustomUserCreationForm, CustomAuthenticationForm, EventForm,
-    EventCommentForm, TicketPurchaseForm, CustomPasswordResetForm
+    EventCommentForm, TicketPurchaseForm, CustomPasswordResetForm, ProfileUpdateForm
 )
 from django.contrib.auth.views import (
     LoginView, PasswordResetView, PasswordResetConfirmView, LogoutView
@@ -270,6 +270,79 @@ class RegisterView(CreateView):
         response = super().form_valid(form)
         messages.success(self.request, 'Registration successful. Please log in.')
         return response
+        
+    def form_invalid(self, form):
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"{field}: {error}")
+        return super().form_invalid(form)
+
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    model = CustomUser
+    form_class = ProfileUpdateForm
+    template_name = 'events/registration/update_profile.html'
+    success_url = reverse_lazy('profile_update')
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Your profile has been updated successfully!')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"{field.title()}: {error}")
+        return super().form_invalid(form)
+    
+
+class UserTicketsView(LoginRequiredMixin, ListView):
+    model = Ticket
+    template_name = 'events/user_tickets.html'
+    context_object_name = 'tickets'
+
+    def get_queryset(self):
+        return Ticket.objects.filter(attendee=self.request.user, is_active=True)
+
+
+class CommentUpdateView(LoginRequiredMixin, UpdateView):
+    model = EventComment
+    fields = ['content', 'rating']
+    template_name = 'events/comment_edit.html'
+    
+    def get_success_url(self):
+        return reverse_lazy('event_detail', kwargs={'pk': self.object.event.pk})
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Comment updated successfully!')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"{field.title()}: {error}")
+        return super().form_invalid(form)
+
+    def get_queryset(self):
+        return EventComment.objects.filter(user=self.request.user)
+
+
+class CommentDeleteView(LoginRequiredMixin, DeleteView):
+    model = EventComment
+    template_name = 'events/comment_delete.html'
+    
+    def get_success_url(self):
+        return reverse_lazy('event_detail', kwargs={'pk': self.object.event.pk})
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Comment deleted successfully!')
+        return super().delete(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return EventComment.objects.filter(user=self.request.user)
+    
 
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy('home') 

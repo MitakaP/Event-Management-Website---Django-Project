@@ -1,0 +1,31 @@
+{% extends 'events/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-white border-danger">
+                    <h3 class="mb-0 text-danger"><i class="bi bi-trash me-2"></i>Delete Comment</h3>
+                </div>
+                
+                <div class="card-body">
+                    <p>Are you sure you want to delete your comment on "{{ comment.event.title }}"?</p>
+                    <div class="alert alert-light border">
+                        <p class="mb-1"><strong>Your comment:</strong></p>
+                        <p class="mb-0">{{ comment.content }}</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'event_detail' comment.event.pk %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-danger">Delete Comment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

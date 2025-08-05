@@ -4,6 +4,41 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .models import CustomUser, Event, EventComment, Ticket
 
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'first_name', 'last_name', 'phone_number', 'profile_picture', 'bio']
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if CustomUser.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+            raise ValidationError("This email address is already in use.")
+        return email
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if phone_number and CustomUser.objects.filter(phone_number=phone_number).exclude(pk=self.instance.pk).exists():
+            raise ValidationError("This phone number is already in use.")
+        return phone_number
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({
+                'class': 'form-control',
+                'autocomplete': 'off'
+            })
+        self.fields['profile_picture'].widget.attrs.update({
+            'class': 'form-control',
+            'accept': 'image/*'
+        })
+
+        
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     phone_number = forms.CharField(max_length=15, required=False)
@@ -20,6 +55,25 @@ class CustomUserCreationForm(UserCreationForm):
             if value != 3 
         ]
         self.fields['user_type'].initial = 1
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email address is already in use.")
+        return email
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if phone_number and CustomUser.objects.filter(phone_number=phone_number).exists():
+            raise forms.ValidationError("This phone number is already in use.")
+        return phone_number
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Add any additional cross-field validation here if needed
+        return cleaned_data
+    
+
 
 class CustomAuthenticationForm(AuthenticationForm):
     remember_me = forms.BooleanField(required=False)

@@ -138,8 +138,12 @@
                     
                     {% if user == comment.user %}
                     <div class="comment-actions">
-                        <a href="#" class="text-muted small me-2"><i class="bi bi-pencil"></i> Edit</a>
-                        <a href="#" class="text-danger small"><i class="bi bi-trash"></i> Delete</a>
+                        <a href="{% url 'comment_edit' comment.pk %}" class="text-muted small me-2">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a href="{% url 'comment_delete' comment.pk %}" class="text-danger small">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
                     </div>
                     {% endif %}
                 </div>

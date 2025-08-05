@@ -3,11 +3,11 @@ from .views import (
     HomeView, EventListView, EventDetailView, EventCreateView,
     EventUpdateView, EventDeleteView, purchase_ticket, UserDashboardView,
     CustomLoginView, RegisterView, CustomPasswordResetView, mark_notification_as_read,
-    AdminDashboardView, CustomLogoutView
+    AdminDashboardView, CustomLogoutView, ProfileUpdateView, UserTicketsView, CommentUpdateView, CommentDeleteView
 )
 from django.contrib.auth.views import (
     PasswordResetDoneView, PasswordResetCompleteView, 
-    LogoutView, PasswordResetConfirmView,
+    LogoutView, PasswordResetConfirmView
 )
 
 urlpatterns = [
@@ -29,4 +29,8 @@ urlpatterns = [
     path('notifications/<int:pk>/mark-read/', mark_notification_as_read, name='mark_notification_read'),
     path('admin-dashboard/', AdminDashboardView.as_view(), name='admin_dashboard'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
+    path('profile/update/', ProfileUpdateView.as_view(), name='profile_update'),
+    path('tickets/', UserTicketsView.as_view(), name='user_tickets'),
+    path('comments/<int:pk>/edit/', CommentUpdateView.as_view(), name='comment_edit'),
+    path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
 ]
