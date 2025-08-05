@@ -88,6 +88,7 @@ class EventDetailView(DetailView):
         context['access_denied'] = False
         context['comments'] = event.comments.all().order_by('-created_at')
         context['comment_form'] = EventCommentForm()
+        context['event'] = event
         
         if self.request.user.is_authenticated:
             context['has_ticket'] = event.tickets.filter(
@@ -151,6 +152,7 @@ class EventDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     
     def test_func(self):
         event = self.get_object()
+        print(event)
         return self.request.user == event.organizer or self.request.user.user_type == 3
     
     def delete(self, request, *args, **kwargs):
