@@ -3,7 +3,9 @@ from .views import (
     HomeView, EventListView, EventDetailView, EventCreateView,
     EventUpdateView, EventDeleteView, purchase_ticket, UserDashboardView,
     CustomLoginView, RegisterView, CustomPasswordResetView, mark_notification_as_read,
-    AdminDashboardView, CustomLogoutView, ProfileUpdateView, UserTicketsView, CommentUpdateView, CommentDeleteView
+    AdminDashboardView, CustomLogoutView, ProfileUpdateView, 
+    UserTicketsView, CommentUpdateView, CommentDeleteView, MyEventsListView,
+    MarkAllNotificationsAsReadView
 )
 from django.contrib.auth.views import (
     PasswordResetDoneView, PasswordResetCompleteView, 
@@ -33,4 +35,6 @@ urlpatterns = [
     path('tickets/', UserTicketsView.as_view(), name='user_tickets'),
     path('comments/<int:pk>/edit/', CommentUpdateView.as_view(), name='comment_edit'),
     path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
+     path('my-events/', MyEventsListView.as_view(), name='my_events'),
+     path('notifications/mark-all-as-read/', MarkAllNotificationsAsReadView.as_view(), name='mark_all_notifications_read'),
 ]

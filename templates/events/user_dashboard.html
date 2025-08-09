@@ -26,7 +26,7 @@
                         <li><a href="{% url 'user_dashboard' %}" class="text-decoration-none">Dashboard</a></li>
                         {% if user.user_type == 2 %}
                         <li><a href="{% url 'event_create' %}" class="text-decoration-none">Create Event</a></li>
-                        <li><a href="#" class="text-decoration-none">My Events</a></li>
+                        <li><a href="{% url 'my_events' %}" class="text-decoration-none">My Events</a></li>
                         {% endif %}
                         <li><a href="{% url 'user_tickets' %}" class="text-decoration-none">My Tickets</a></li>
                     </ul>
@@ -38,7 +38,7 @@
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4>Notifications</h4>
-                    <a href="#" class="btn btn-sm btn-outline-secondary">Mark all as read</a>
+                    <a href="{% url 'mark_all_notifications_read' %}" class="btn btn-sm btn-outline-secondary">Mark all as read</a>
                 </div>
                 <div class="card-body">
                     {% if unread_notifications %}
